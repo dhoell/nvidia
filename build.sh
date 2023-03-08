@@ -17,7 +17,7 @@ fi
 rpm-ostree install \
     akmod-${NVIDIA_PACKAGE_NAME}*:${NVIDIA_MAJOR_VERSION}.*.fc${RELEASE} \
     xorg-x11-drv-${NVIDIA_PACKAGE_NAME}-{,cuda,devel,kmodsrc,power}*:${NVIDIA_MAJOR_VERSION}.*.fc${RELEASE} \
-    akmod-v4l2loopack.*.fc${RELEASE} \
+    akmod-v4l2loopback.*.fc${RELEASE} \
     mock
 
 /tmp/build/ublue-os-just/build.sh
@@ -39,7 +39,7 @@ KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 NVIDIA_AKMOD_VERSION="$(basename "$(rpm -q "akmod-${NVIDIA_PACKAGE_NAME}" --queryformat '%{VERSION}-%{RELEASE}')" ".fc${RELEASE%%.*}")"
 NVIDIA_LIB_VERSION="$(basename "$(rpm -q "xorg-x11-drv-${NVIDIA_PACKAGE_NAME}" --queryformat '%{VERSION}-%{RELEASE}')" ".fc${RELEASE%%.*}")"
 NVIDIA_FULL_VERSION="$(rpm -q "xorg-x11-drv-${NVIDIA_PACKAGE_NAME}" --queryformat '%{EPOCH}:%{VERSION}-%{RELEASE}.%{ARCH}')"
-LOOPBACK_AKMOD_VERSION="$(basename "$(rpm -q "akmod-v4l2-llopback" --queryformat '%{VERSION}-%{RELEASE}')" ".fc${RELEASE%%.*}")"
+LOOPBACK_AKMOD_VERSION="$(basename "$(rpm -q "akmod-v4l2-loopback" --queryformat '%{VERSION}-%{RELEASE}')" ".fc${RELEASE%%.*}")"
 
 akmods --force --kernels "${KERNEL_VERSION}" --kmod "${NVIDIA_PACKAGE_NAME}"
 akmods --force --kernels "${KERNEL_VERSION}" --kmod "v4l2loopback"
