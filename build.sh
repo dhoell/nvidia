@@ -17,6 +17,7 @@ fi
 rpm-ostree install \
     akmod-${NVIDIA_PACKAGE_NAME}*:${NVIDIA_MAJOR_VERSION}.*.fc${RELEASE} \
     xorg-x11-drv-${NVIDIA_PACKAGE_NAME}-{,cuda,devel,kmodsrc,power}*:${NVIDIA_MAJOR_VERSION}.*.fc${RELEASE} \
+    akmod-v4l2loopack.*.fc${RELEASE} \
     mock
 
 /tmp/build/ublue-os-just/build.sh
@@ -38,11 +39,15 @@ KERNEL_VERSION="$(rpm -q kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 NVIDIA_AKMOD_VERSION="$(basename "$(rpm -q "akmod-${NVIDIA_PACKAGE_NAME}" --queryformat '%{VERSION}-%{RELEASE}')" ".fc${RELEASE%%.*}")"
 NVIDIA_LIB_VERSION="$(basename "$(rpm -q "xorg-x11-drv-${NVIDIA_PACKAGE_NAME}" --queryformat '%{VERSION}-%{RELEASE}')" ".fc${RELEASE%%.*}")"
 NVIDIA_FULL_VERSION="$(rpm -q "xorg-x11-drv-${NVIDIA_PACKAGE_NAME}" --queryformat '%{EPOCH}:%{VERSION}-%{RELEASE}.%{ARCH}')"
+LOOPBACK_AKMOD_VERSION="$(basename "$(rpm -q "akmod-v4l2-llopback" --queryformat '%{VERSION}-%{RELEASE}')" ".fc${RELEASE%%.*}")"
 
 akmods --force --kernels "${KERNEL_VERSION}" --kmod "${NVIDIA_PACKAGE_NAME}"
+akmods --force --kernels "${KERNEL_VERSION}" --kmod "v4l2loopback"
 
 modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/${NVIDIA_PACKAGE_NAME}/nvidia{,-drm,-modeset,-peermem,-uvm}.ko.xz > /dev/null || \
 (cat /var/cache/akmods/${NVIDIA_PACKAGE_NAME}/${NVIDIA_AKMOD_VERSION}-for-${KERNEL_VERSION}.failed.log && exit 1)
+modinfo /usr/lib/modules/${KERNEL_VERSION}/extra/v4l2loopback/v4l2loopback.ko.xz > /dev/null || \
+(cat /var/cache/akmods/v4l2loopback/${LOOPBACK_AKMOD_VERSION}-for-${KERNEL_VERSION}.failed.log && exit 1)
 
 sed -i "s@gpgcheck=0@gpgcheck=1@" /tmp/ublue-os-nvidia-addons/rpmbuild/SOURCES/nvidia-container-runtime.repo
 
@@ -53,7 +58,7 @@ rpmbuild -ba \
     --define '%_tmppath %{_topdir}/tmp' \
     /tmp/ublue-os-nvidia-addons/ublue-os-nvidia-addons.spec
 
-cat <<EOF > /var/cache/akmods/nvidia-vars
+cat <<EOF > /var/cache/akmods/akmod-vars
 KERNEL_VERSION=${KERNEL_VERSION}
 RELEASE=${RELEASE}
 NVIDIA_PACKAGE_NAME=${NVIDIA_PACKAGE_NAME}
@@ -61,4 +66,5 @@ NVIDIA_MAJOR_VERSION=${NVIDIA_MAJOR_VERSION}
 NVIDIA_FULL_VERSION=${NVIDIA_FULL_VERSION}
 NVIDIA_AKMOD_VERSION=${NVIDIA_AKMOD_VERSION}
 NVIDIA_LIB_VERSION=${NVIDIA_LIB_VERSION}
+LOOPBACK_AKMOD_VERSION=${LOOPBACK_AKMOD_VERSION}
 EOF
